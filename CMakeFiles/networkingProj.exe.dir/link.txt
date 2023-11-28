@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/networkingProj.exe.dir/main.cpp.o CMakeFiles/networkingProj.exe.dir/server.cpp.o -o networkingProj.exe 
