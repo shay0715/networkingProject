@@ -8,7 +8,6 @@ Server::Server()
     {
         std::string groupName = "Group: " + std::to_string(i + 1);
         Group group = Group(groupName, i+1);
-        std::cout << groupName << std::endl;
         groupList.emplace_back(std::move(group));
     }
 }
@@ -47,49 +46,43 @@ void Server::InterpretCommand(std::string command, User user)
         {
             char firstSymbol = argVector.at(0)[0];
 
-            std::cout << firstSymbol << std::endl;
 
             if(isdigit(firstSymbol))
             {
                 id = std::stoi(argVector.at(0)); 
-                std::cout << id << std::endl;
             }
-        }
 
-        for(int i =0; i < groupList.size(); i++)
-        {
-            //TODO fix this for loop with Group& group : groupList
-            if(id > 0)
+            for(int i =0; i < groupList.size(); i++)
             {
-                if(groupList.at(i).GetGroupID() == id)
+                //TODO fix this for loop with Group& group : groupList
+                if(id > 0)
                 {
-                    int groupSubstrIndex = command.find("group");
-                    command = '%' + command.substr(groupSubstrIndex + 5);
-                    command = GetGroupCommand(command, argVector);
+                    if(groupList.at(i).GetGroupID() == id)
+                    {
+                        int groupSubstrIndex = command.find("group");
+                        command = '%' + command.substr(groupSubstrIndex + 5);
+                        command = GetGroupCommand(command, argVector);
 
-                    std::cout << command << std::endl;
-                    groupList.at(i) = std::move(groupList.at(i).InterpretCommand(command, user));
-                    groupList.at(i).PrintUserList(user);
-                    return;
+                        groupList.at(i).InterpretCommand(command, user);
+                        return;
+                    }
+                }
+                else
+                {
+                    if(groupList.at(i).GetGroupName() == argVector.at(0))
+                    {
+                         int groupSubstrIndex = command.find("group");
+                        command = '%' + command.substr(groupSubstrIndex + 5);
+
+                        command = GetGroupCommand(command, argVector);
+
+                        groupList.at(i).InterpretCommand(command, user);
+                        return;
+                    }
                 }
             }
-            else
-            {
-                if(groupList.at(i).GetGroupName() == argVector.at(0))
-                {
-                     int groupSubstrIndex = command.find("group");
-                    command = '%' + command.substr(groupSubstrIndex + 5);
-
-                    command = GetGroupCommand(command, argVector);
-                                        
-                    std::cout<< command << std::endl;
-
-                    groupList.at(i).InterpretCommand(command, user);
-                    return;
-                }
-            }
-        }
         std::cout << "No group with that name or ID exist" << std::endl;
+        }
     }
 }
 

@@ -38,9 +38,9 @@ bool Group::AddToUserList(User& newUser)
 
 void Group::PrintUserList(User user)
 {
-    for(User user : userList)
+    for(User userFromList : userList)
     {
-        user.sendMsg(user.GetUsername());
+        user.sendMsg(userFromList.GetUsername());
     }
 }
 
@@ -112,7 +112,6 @@ Group Group::InterpretCommand(std::string command, User& user)
     
     else if(command.find("%post") == 0)
     {
-        std::cout<<"posting"<<std::endl;
         std::vector<std::string> argVector = parseString(command);
         Post(std::move(argVector.at(0)), std::move(argVector.at(1)), user);
     }
@@ -124,7 +123,7 @@ Group Group::InterpretCommand(std::string command, User& user)
 
     else if(command.find("%leave") == 0)
     {
-        Leave();
+        Leave(user);
     }
 
     else if(command.find("%message") == 0)
@@ -169,25 +168,23 @@ bool Group::Connect(std::string address, std::string port)
 
 bool Group::Join(User user)
 {
-    std::cout<<"joined"<<std::endl;
     AddToUserList(user);
     return true;
 }
 
 bool Group::Post(std::string subject, std::string body, User& user)
 {
-    std::cout<<"in post"<<std::endl;
     std::string msgID = std::to_string(GetNextMsgID());
     Message msg = Message(subject, body, user.GetUsername(), msgID);
     msgList.push_back(msg);
-    std::cout<<msg.PrintMsg()<<std::endl;
     sendMsgAll(msg.PrintMsg());
     return true;
 }
 
-bool Group::Leave()
+bool Group::Leave(User user)
 {
-    joinedStatus = false;
+    RemoveFromUserList(user.GetUsername());
+    user.sendMsg("Leaving " + groupName);
     return true;
 }
 
@@ -206,12 +203,7 @@ bool Group::GetMessage(std::string msgID, User user)
 
 bool Group::Exit(User user)
 {
-    if(joinedStatus == true)
-    {
-        user.sendMsg("Please use %leave to leave the bulliten board first");
-        return false;
-    }
-
+    //TODO leave all groups for user
     user.SetExitStatus(true);
     return true;
 }
@@ -225,11 +217,6 @@ int Group::GetNextMsgID()
 {
     msgID += 1;
     return msgID;
-}
-
-bool Group::GetJoinedStatus()
-{
-    return joinedStatus;
 }
 
 int Group::GetGroupID()
@@ -283,10 +270,8 @@ std::vector<std::string> parseString(std::string stringToParse)
 
 void Group::sendMsgAll(std::string msg)
 {
-    std::cout<<"sending"<<std::endl;
     for(User user : userList)
     {
-        std::cout << user.GetUsername() << std::endl;
         user.sendMsg(msg);
     }
 }

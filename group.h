@@ -29,7 +29,7 @@ class Group
         bool Connect(std::string, std::string);
         bool Join(User user);
         bool Post(std::string, std::string, User& user);
-        bool Leave();
+        bool Leave(User user);
         bool GetMessage(std::string, User user);
         bool Exit(User user);
 
@@ -41,7 +41,6 @@ class Group
 
 
         // Get Statuses
-        bool GetJoinedStatus();
         int GetGroupID();
         std::string GetGroupName();
 
@@ -52,7 +51,6 @@ class Group
         int msgID;
         std::vector<Message> msgList;
         std::string currentUser;
-        bool joinedStatus;
         std::vector<std::string> commandList = {"%connect", "%join", "%post", "%users", "%leave", "%messages", "%exit"};
 
 };

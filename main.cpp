@@ -34,7 +34,6 @@ int main() {
             threadpool.push_back(std::thread(mainLoop, std::cref(socketpool.at(socketpool.size()-1)), std::ref(server)));
         }                
     }
-    
     return 0;
 }
 
