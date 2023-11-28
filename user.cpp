@@ -1,4 +1,6 @@
 #include "user.h"
+#include <string.h>
+#include <sys/socket.h>
 
 User::User(const int& socket)
 {
@@ -29,4 +31,12 @@ void User::SetExitStatus(bool status)
 const int& User::GetSocket()
 {
     return socket;
+}
+
+void User::sendMsg(std::string msg)
+{
+    msg = '\n' + msg;
+    const char* characterMsg = msg.c_str();
+    send(socket, characterMsg, strlen(characterMsg), 0);
+
 }

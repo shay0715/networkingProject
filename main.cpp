@@ -21,7 +21,7 @@ int main() {
     socklen_t adderlen = sizeof(address);
     bind(sockfd, (sockaddr*)&address, sizeof(address));
 
-    Group group = Group();
+    Server server = Server();
 
 
     while(true)
@@ -31,27 +31,27 @@ int main() {
         if(connected)
         {
             socketpool.push_back(socket);
-            threadpool.push_back(std::thread(mainLoop, std::cref(socketpool.at(socketpool.size()-1)), std::ref(group)));
+            threadpool.push_back(std::thread(mainLoop, std::cref(socketpool.at(socketpool.size()-1)), std::ref(server)));
         }                
     }
     
     return 0;
 }
 
-void mainLoop(const int& socket, Group& group)
+void mainLoop(const int& socket, Server& server)
 {
     User user = User(socket);
 
     send(socket, "Enter a username: ", strlen("Enter a username: "), 0);
+
+    // TODO: Need loop for set user
+
     user.SetUseranme(getCommand(user.GetSocket()));
-    group.AddToUserList(user);
-    
-    group.InterpretCommand(getCommand(socket), user);
 
     while(!user.GetExitStatus())
     {
 
-        group.InterpretCommand(getCommand(socket), user);
+        server.InterpretCommand(getCommand(socket), user);
 
     }
 }

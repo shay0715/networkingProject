@@ -13,22 +13,22 @@ Group::Group(std::string groupName, int groupID)
 {
     this->socket = socket;
     this->groupName = groupName;
-    this->groupID;
+    this->groupID = groupID;
     msgID = 0;
 }
 
-bool Group::AddToUserList(User newUser)
+bool Group::AddToUserList(User& newUser)
 {
     for(User user : userList)
     {
         if(user.GetUsername() == newUser.GetUsername())
         {
-            sendMsg("That username has already been taking in this bulletin board", newUser);
+            newUser.sendMsg("That username has already been taking in this bulletin board");
             return false;
         }
     }
 
-    userList.push_back(newUser);
+    userList.emplace_back(newUser);
     std::string msg = "SERVER MESSAGE: Welcome " + newUser.GetUsername() + " to the bulletin-board: " + groupName;
     sendMsgAll(msg);
     PrintUserListAll();
@@ -40,7 +40,7 @@ void Group::PrintUserList(User user)
 {
     for(User user : userList)
     {
-        sendMsg(user.GetUsername(), user);
+        user.sendMsg(user.GetUsername());
     }
 }
 
@@ -75,7 +75,7 @@ bool Group::RemoveFromUserList(std::string username)
     return false;
 }
 
-void Group::InterpretCommand(std::string command, User user)
+Group Group::InterpretCommand(std::string command, User& user)
 {
     // command needs to equal 0 and not be greater than 0 to ensure a command isn't inside a post
     if(command.find("%connect") == 0)
@@ -88,46 +88,46 @@ void Group::InterpretCommand(std::string command, User user)
 
         if(!user.GetExitStatus())
         {
-            sendMsg("Connected successfully", user);
+            user.sendMsg("Connected successfully");
         }
         else
         {
-            sendMsg("Could not be connected", user);
+            user.sendMsg("Could not be connected");
         }
     }
 
-    else if(command.find("%join") == 0 && !user.GetExitStatus())
+    else if(command.find("%join") == 0)
     {
-        Join();
-
-        if(joinedStatus)
+        bool joined = Join(user);
+        if(joined)
         {
-            sendMsg("Joined successfully", user);
+            user.sendMsg("Joined successfully");
             DisplayRecentMsgs(user);
         }
         else
         {
-            sendMsg("Count not be joined", user);
+            user.sendMsg("Count not be joined");
         }
     }
     
-    else if(command.find("%post") == 0 && joinedStatus)
+    else if(command.find("%post") == 0)
     {
+        std::cout<<"posting"<<std::endl;
         std::vector<std::string> argVector = parseString(command);
         Post(std::move(argVector.at(0)), std::move(argVector.at(1)), user);
     }
 
-    else if(command.find("%users") == 0 && joinedStatus)
+    else if(command.find("%users") == 0)
     {
         PrintUserList(user);
     }
 
-    else if(command.find("%leave") == 0 && joinedStatus)
+    else if(command.find("%leave") == 0)
     {
         Leave();
     }
 
-    else if(command.find("%message") == 0 && joinedStatus)
+    else if(command.find("%message") == 0)
     {
         std::vector<std::string> argVector = parseString(command);
         GetMessage(std::move(argVector.at(0)), user);
@@ -140,44 +140,25 @@ void Group::InterpretCommand(std::string command, User user)
 
     else if(command.find("%help") == 0)
     {
-        if(command == "%help" && joinedStatus)
+        if(command == "%help")
         {
-            sendMsg("List of all commands: ", user);
+            user.sendMsg("List of all commands: ");
             for(std::string exampleCommand : commandList)
             {
-                sendMsg(exampleCommand, user);
+                user.sendMsg(exampleCommand);
             }
 
-            sendMsg("Type \"%help -[command]\" for help with using a specific command", user);
+            user.sendMsg("Type \"%help -[command]\" for help with using a specific command");
         }
-        else if(command.find("%help") && joinedStatus)
+        else
         {
             std::vector<std::string> argVector = parseString(command);
             // Write help function
             std::string msg = "You want help with " + argVector.at(0) + "?"; 
-            sendMsg(msg, user);
-        }
-        else
-        {
-            std::string msg = "Use %connect -[ADDRESS] -[PORT] to connect to a server \n Use %join to join a bulliten board";
-            sendMsg(msg, user);
+            user.sendMsg(msg);
         }
     }
-    
-    else
-    {
-        if(joinedStatus)
-        {
-            std::string msg = "The command you entered doesn't exist. Make sure you began your command with % and you don't have any leading whitespace. Use %help to see the list of commands.";
-            sendMsg(msg, user);
-        }
-        else
-        {
-            std::string msg = "The command you entered doesn't exist or cannot be used until you connect to a server and join a bulliten board. Make sure you began your command with % and you don't have any leading whitespace. Use %help to see what commands you have access to.";
-            sendMsg(msg, user);
-        }
-    }
-
+    return *this;
 }
 
 bool Group::Connect(std::string address, std::string port)
@@ -186,17 +167,20 @@ bool Group::Connect(std::string address, std::string port)
 }
 
 
-bool Group::Join()
+bool Group::Join(User user)
 {
-    joinedStatus = true;
+    std::cout<<"joined"<<std::endl;
+    AddToUserList(user);
     return true;
 }
 
-bool Group::Post(std::string subject, std::string body, User user)
+bool Group::Post(std::string subject, std::string body, User& user)
 {
+    std::cout<<"in post"<<std::endl;
     std::string msgID = std::to_string(GetNextMsgID());
     Message msg = Message(subject, body, user.GetUsername(), msgID);
     msgList.push_back(msg);
+    std::cout<<msg.PrintMsg()<<std::endl;
     sendMsgAll(msg.PrintMsg());
     return true;
 }
@@ -214,7 +198,7 @@ bool Group::GetMessage(std::string msgID, User user)
         if(msgID == msg.GetMsgID())
         {
             std::string msgContent = "The body of message " + msgID + " is: " + msg.GetBody();
-            sendMsg(msgContent, user);
+            user.sendMsg(msgContent);
         }
     }
     return true;
@@ -224,7 +208,7 @@ bool Group::Exit(User user)
 {
     if(joinedStatus == true)
     {
-        sendMsg("Please use %leave to leave the bulliten board first", user);
+        user.sendMsg("Please use %leave to leave the bulliten board first");
         return false;
     }
 
@@ -262,16 +246,16 @@ void Group::DisplayRecentMsgs(User user)
 {
     if(msgList.size() >= 2)
     {
-        sendMsg(msgList.at(msgList.size()-2).PrintMsg(), user);
-        sendMsg(msgList.at(msgList.size()-1).PrintMsg(), user);
+        user.sendMsg(msgList.at(msgList.size()-2).PrintMsg());
+        user.sendMsg(msgList.at(msgList.size()-1).PrintMsg());
     }
     else if (msgList.size() == 1)
     {
-        sendMsg(msgList.at(msgList.size()-1).PrintMsg(), user);
+        user.sendMsg(msgList.at(msgList.size()-1).PrintMsg());
     }
     else
     {
-        sendMsg("There are no post yet! You can be the first!", user);
+        user.sendMsg("There are no post yet! You can be the first!");
     }
 }
 
@@ -297,18 +281,12 @@ std::vector<std::string> parseString(std::string stringToParse)
     return std::move(argVector);
 }   
 
-void Group::sendMsg(std::string msg, User user)
-{
-    msg = '\n' + msg;
-    const char* characterMsg = msg.c_str();
-    send(user.GetSocket(), characterMsg, strlen(characterMsg), 0);
-
-}
-
 void Group::sendMsgAll(std::string msg)
 {
+    std::cout<<"sending"<<std::endl;
     for(User user : userList)
     {
-        sendMsg(msg, user);
+        std::cout << user.GetUsername() << std::endl;
+        user.sendMsg(msg);
     }
 }

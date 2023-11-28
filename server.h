@@ -3,16 +3,18 @@
 #include "group.h"
 
 
-int nextPort();
-
 class Server
 {
     public:
         Server();
         Server(int);
-        void InterpretCommand(std::string, std::string);
+        void InterpretCommand( std::string, User user);
+        void AddUserToGroup();
+        std::vector<std::string> parseString(std::string);
+        std::string GetGroupCommand(std::string, std::vector<std::string>);
+        void sendMsg(std::string msg, User user);
     private:
-        int portNumber;
+
         std::vector<Group> groupList;
     
 };

@@ -9,6 +9,7 @@ class User
         bool GetExitStatus();
         void SetExitStatus(bool);
         const int& GetSocket();
+        void sendMsg(std::string);
 
     private:
         int socket;
