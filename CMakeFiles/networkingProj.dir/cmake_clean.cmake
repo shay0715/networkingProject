@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/networkingProj.dir/UI.cpp.o"
+  "CMakeFiles/networkingProj.dir/UI.cpp.o.d"
   "CMakeFiles/networkingProj.dir/group.cpp.o"
   "CMakeFiles/networkingProj.dir/group.cpp.o.d"
   "CMakeFiles/networkingProj.dir/main.cpp.o"

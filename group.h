@@ -18,20 +18,21 @@ class Group
         
         // Methods for list of users
         void PrintUserList(User user);
-        void PrintUserListAll();
+        void PrintUserListAll(User user);
         bool AddToUserList(User&);
         bool RemoveFromUserList(std::string);
+        bool isInUserList(User user);
         std::vector<User> GetUserList();
         std::string GetCurrentUser();
 
         // Methods for commands
-        Group InterpretCommand(std::string, User& user);
+        void InterpretCommand(std::string, User& user);
         bool Connect(std::string, std::string);
         bool Join(User user);
         bool Post(std::string, std::string, User& user);
         bool Leave(User user);
         bool GetMessage(std::string, User user);
-        bool Exit(User user);
+        bool Exit(User& user);
 
         // Methods for messages
         int GetCurrentMsgID();
@@ -51,6 +52,4 @@ class Group
         int msgID;
         std::vector<Message> msgList;
         std::string currentUser;
-        std::vector<std::string> commandList = {"%connect", "%join", "%post", "%users", "%leave", "%messages", "%exit"};
-
 };

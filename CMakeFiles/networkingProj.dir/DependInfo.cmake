@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "/home/shay/proj2/UI.cpp" "CMakeFiles/networkingProj.dir/UI.cpp.o" "gcc" "CMakeFiles/networkingProj.dir/UI.cpp.o.d"
   "/home/shay/proj2/group.cpp" "CMakeFiles/networkingProj.dir/group.cpp.o" "gcc" "CMakeFiles/networkingProj.dir/group.cpp.o.d"
   "/home/shay/proj2/main.cpp" "CMakeFiles/networkingProj.dir/main.cpp.o" "gcc" "CMakeFiles/networkingProj.dir/main.cpp.o.d"
   "/home/shay/proj2/message.cpp" "CMakeFiles/networkingProj.dir/message.cpp.o" "gcc" "CMakeFiles/networkingProj.dir/message.cpp.o.d"

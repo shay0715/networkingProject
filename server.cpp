@@ -1,41 +1,95 @@
 #include "server.h"
+#include "UI.h"
 #include <sys/socket.h>
 #include <string.h>
 
 Server::Server()
 {
+    std::vector<std::string> roomNames = {"Dogs" , "Cats", "Programming", "Misc.", "Coffee"};
     for(int i=0; i<5; i++)
     {
-        std::string groupName = "Group: " + std::to_string(i + 1);
+        std::string groupName = roomNames.at(i);
         Group group = Group(groupName, i+1);
         groupList.emplace_back(std::move(group));
     }
 }
 
-Server::Server(int amountOfGroups)
-{
-    for(int i=0; i<amountOfGroups; i++)
-    {
-        std::string groupName = "Group: " + std::to_string(i+1);
-        Group group = Group(groupName, i+1);
-        groupList.emplace_back(std::move(group));
-    }
-}
-
-void Server::InterpretCommand(std::string command, User user)
+void Server::InterpretCommand(std::string command, User& user)
 {
     //TODO: write getgroups
     if(command == "%groups")
     {
-        for(Group group : groupList)
+        ListGroups(user);
+    }
+    else if(command.find("%help") == 0)
+    {
+        if(command == "%help")
         {
-            std::string msg = "The names of groups are: " + group.GetGroupName() + " the id's of the groups are: " + std::to_string(group.GetGroupID());
-            sendMsg(msg, user);
+            user.sendMsg("== The following is a list of all commands ==\n");
+            for(std::string exampleCommand : commandList)
+            {
+                user.sendMsg("+= "+ exampleCommand + '\n');
+            } 
+
+            user.sendMsg("== Use \"%help -[command]\" for help with using a specific command ==\n");
+        }
+        else
+        {
+            std::vector<std::string> argVector = parseString(command);
+            std::string arg = argVector.at(0);
+
+            std::string msg = "";
+
+            if(arg == "%group")
+            {
+                msg = "== \"%group\" list all active groups and takes no arguments ==\n";
+            }
+            else if(arg == "%groupjoin")
+            {
+                msg = "== \"%groupjoin -[ROOMNAME | ROOMID]\" connects a user to a room. takes one required argument as room name\\room ID ==\n";
+                msg += "== Example Usage: \"%groupjoin -Dogs\" | \"%groupjoin -1\" ==\n";
+            }
+            else if(arg == "%grouppost")
+            {
+                msg = "== \"%grouppost -[ROOMNAME | ROOMID] -[SUBJECT] -[BODY]\" creates a post on a specified room. takes three required arugments as room name\\room ID, post subject, post body == \n";
+                msg += "== Example Usage: \"%grouppost -1 -Subject -Body\" ==\n";
+            }
+            else if(arg == "%groupusers")
+            {
+                msg = "== \"%groupusers -[ROOMNAME | ROOMID]\" prints all users in a room. Takes one required arguement as room name \\ room ID ==\n";
+                msg += "== Example Usage: \"%groupusers -1\" ==\n";
+            }
+            else if(arg == "%groupleave")
+            {
+                msg = "== \"%groupleave -[ROOMNAME | ROOMID]\" disconnects a user from a room. Takes one required argument as room name \\ room ID ==\n";
+                msg += "== Example Usage: \"%groupleave -1\" ==\n";
+            }
+            else if(arg =="%groupmessage")
+            {
+                msg = "== \"%groupmessage -[ROOMNAME | ROOMID] -[MSGID]\" retrieves and prints the body of a post. Takes two required arguments as the room name \\ room ID, post ID ==\n";
+                msg += "== Example Usage: \"%groupmessage -1 -1\" ==\n";
+            }
+            else if(arg == "%exit")
+            {
+                msg = "== \"%exit\" disconnects a user from all rooms and the server. Takes no arguments ==\n";
+            }
+            
+            user.sendMsg(msg);
         }
     }
-    else if(command == "%help")
+    else if(command == "%exit")
     {
-
+        for(int i=0; i<groupList.size(); i++)
+        {
+            for(int j=0; j<groupList.at(i).GetUserList().size(); j++)
+            {
+                if(user.GetUsername() == groupList.at(i).GetUserList().at(j).GetUsername())
+                {
+                    groupList.at(i).Exit(user);
+                }
+            }
+        }
+        user.SetExitStatus(true);
     }
     else
     {
@@ -54,7 +108,6 @@ void Server::InterpretCommand(std::string command, User user)
 
             for(int i =0; i < groupList.size(); i++)
             {
-                //TODO fix this for loop with Group& group : groupList
                 if(id > 0)
                 {
                     if(groupList.at(i).GetGroupID() == id)
@@ -123,10 +176,20 @@ std::string Server::GetGroupCommand(std::string command, std::vector<std::string
     return commandToReturn;
 }
 
-void Server::sendMsg(std::string msg, User user)
+void Server::ListGroups(User user)
 {
-    msg = '\n' + msg;
-    const char* characterMsg = msg.c_str();
-    send(user.GetSocket(), characterMsg, strlen(characterMsg), 0);
+    std::string msg = "  |------Currently Active Rooms------|\n";
+    int hyphenAmt = msg.size();
+    std::string hypensForMsg = UI::HyphenGenerator(hyphenAmt-5);
+    msg += "  |" + hypensForMsg + "|\n";
+    for(Group group : groupList)
+    {
+        std::string msgToAdd = "  |--Room \"" + group.GetGroupName() + "\"" + "--ID " + std::to_string(group.GetGroupID());
+        msgToAdd += UI::HyphenGenerator(hyphenAmt-msgToAdd.size() - 2)+"|\n";
 
+        msg += "  |"+UI::HyphenGenerator(hyphenAmt -5 ) + "|\n";
+        msg += msgToAdd;
+        msg += "  |" + UI::HyphenGenerator(hyphenAmt -5 ) + "|\n";
+    }
+    user.sendMsg(msg);
 }

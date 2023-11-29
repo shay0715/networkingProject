@@ -129,6 +129,30 @@ networkingProj/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/networkingProj.dir/build.make CMakeFiles/networkingProj.dir/build
 .PHONY : networkingProj/fast
 
+UI.o: UI.cpp.o
+.PHONY : UI.o
+
+# target to build an object file
+UI.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/networkingProj.dir/build.make CMakeFiles/networkingProj.dir/UI.cpp.o
+.PHONY : UI.cpp.o
+
+UI.i: UI.cpp.i
+.PHONY : UI.i
+
+# target to preprocess a source file
+UI.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/networkingProj.dir/build.make CMakeFiles/networkingProj.dir/UI.cpp.i
+.PHONY : UI.cpp.i
+
+UI.s: UI.cpp.s
+.PHONY : UI.s
+
+# target to generate assembly for a file
+UI.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/networkingProj.dir/build.make CMakeFiles/networkingProj.dir/UI.cpp.s
+.PHONY : UI.cpp.s
+
 group.o: group.cpp.o
 .PHONY : group.o
 
@@ -258,6 +282,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... networkingProj"
+	@echo "... UI.o"
+	@echo "... UI.i"
+	@echo "... UI.s"
 	@echo "... group.o"
 	@echo "... group.i"
 	@echo "... group.s"

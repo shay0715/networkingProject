@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <thread>
+#include "UI.h"
 #include "main.h"
 
 
@@ -41,18 +42,22 @@ void mainLoop(const int& socket, Server& server)
 {
     User user = User(socket);
 
-    send(socket, "Enter a username: ", strlen("Enter a username: "), 0);
+    while(!user.getUsernameStatus())
+    {
+        user.SetUseranme(getCommand(user.GetSocket()));
+    }
 
-    // TODO: Need loop for set user
-
-    user.SetUseranme(getCommand(user.GetSocket()));
+    user.sendMsg(UI::WhiteSpaceOffScreen());
+    user.sendMsg("-- Welcome to Bullet-in-the-Board " +user.GetUsername() + " -- \n");
+    server.ListGroups(user);
 
     while(!user.GetExitStatus())
     {
-
+        user.sendMsgNoWhitespace("Enter a command: ");
         server.InterpretCommand(getCommand(socket), user);
 
     }
+    close(user.GetSocket());
 }
 
 bool connectToClient(int& new_socket, int& sockfd, sockaddr_in address, socklen_t adderlen )
